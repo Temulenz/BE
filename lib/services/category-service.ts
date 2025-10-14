@@ -1,4 +1,4 @@
-import { Category, Dishes } from "../models/Category";
+import { Category } from "../models/Category";
 import connectDB from "../mongodb";
 
 export const createCategory = async (name: string) => {
@@ -8,13 +8,12 @@ export const createCategory = async (name: string) => {
   return newCategory;
 };
 
+export const deleteCategoryById = async (id: string) => {
+  await connectDB();
+  return await Category.findByIdAndDelete(id);
+};
+
 export const getAllCategories = async () => {
   await connectDB();
   return await Category.find();
-};
-export const Dishesinfo = async (form: any) => {
-  await connectDB();
-  const Newdishes = new Dishes({ form });
-  await Newdishes.save();
-  return Newdishes;
 };

@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { uploadImageToCloudinary } from "@/lib/utils/uploadImage";
 import { FoodType } from "@/lib/utils/type";
+import { createFood, getAllFoods } from "@/lib/services/food-service";
 
 export async function GET() {
-  return Response.json({ data: "Hello from Food" });
+  const result = await getAllFoods();
+  return Response.json({ data: result });
 }
 
 export async function POST(request: NextRequest) {
@@ -54,6 +56,8 @@ export async function POST(request: NextRequest) {
     };
 
     console.log("Final Food Data:", foodData);
+
+    await createFood(foodData);
 
     // Return success response
     return NextResponse.json(
