@@ -1,13 +1,13 @@
-import {Food} from "../models/Food"
+import { Food } from "../models/Food";
 import connectDB from "../mongodb";
-type food ={
-  name:string,
-  price:number,
-  ingredients:string
-  image:string
-}
+type food = {
+  name: string;
+  price: number;
+  ingredients: string;
+  image: string;
+};
 
-export const createFood = async (foodData:food) => {
+export const createFood = async (foodData: food) => {
   await connectDB();
   const newFood = new Food(foodData);
   await newFood.save();
