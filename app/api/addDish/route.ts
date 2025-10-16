@@ -1,82 +1,62 @@
 import { NextRequest, NextResponse } from "next/server";
 import { uploadImageToCloudinary } from "@/lib/utils/uploadImage";
-import { FoodType } from "@/lib/utils/type";
-import { createFood, getAllFoods } from "@/lib/services/food-service";
+import {
+  createFood,
+  deleteFoodById,
+  getAllFoods,
+} from "@/lib/services/food-service";
 
 export async function GET() {
+  console.log("HEllo");
   const result = await getAllFoods();
-  return Response.json({ data: result });
+  return NextResponse.json({ data: result });
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    // Parse the formData from the request
-    const formData = await request.formData();
+  const formData = await request.formData();
 
-    // Extract food fields from formData
-    const name = formData.get("name") as string;
-    const ingredients = formData.get("ingredients") as string;
-    const price = formData.get("price") as string;
+  // Extract food fields from formData
+  const name = formData.get("name") as string;
+  const ingredients = formData.get("ingredients") as string;
+  const price = formData.get("price") as string;
+  const image = formData.get("image") as File;
+  const categoryId = formData.get("categoryId") as string;
 
-    const image = formData.get("image") as File;
+  const uploadedUrl = await uploadImageToCloudinary(image);
 
-    // Console log the received data
-    console.log("========== Received Food Data ==========");
-    console.log("Name:", name);
-    console.log("ingredients:", ingredients);
-    console.log("Price:", price);
+  const result = await createFood(
+    name,
+    ingredients,
+    Number(price),
+    categoryId,
+    uploadedUrl
+  );
 
-    console.log(
-      "Image:",
-      image ? `${image.name} (${image.size} bytes)` : "No image"
-    );
-    console.log("=======================================");
-
-    // Validate required fields
-    if (!name || !ingredients || !price || !image) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
-
-    // Handle image upload if image exists
-    let imageUrl = "";
-    if (image) {
-      imageUrl = await uploadImageToCloudinary(image);
-    }
-
-    // Prepare the food data object
-    const foodData: FoodType = {
-      name,
-      ingredients,
-      price: parseFloat(price),
-
-      image: imageUrl,
-    };
-
-    console.log("Final Food Data:", foodData);
-
-    await createFood(foodData);
-
-    // Return success response
+  if (result) {
     return NextResponse.json(
-      {
-        success: true,
-        message: "Food item received and image uploaded successfully",
-        data: foodData,
-      },
-      { status: 201 }
+      { message: "Food item received successfully" },
+      { status: 200 }
     );
-  } catch (error) {
-    console.error("Error processing food data:", error);
+  } else {
     return NextResponse.json(
-      {
-        success: false,
-        error: "Failed to process food data",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
+      { message: "Food Failed to create" },
+      { status: 400 }
     );
   }
+}
+
+export async function DELETE(req: NextRequest) {
+  const body = await req.json();
+  const id = body.id;
+  if (!id) {
+    return new NextResponse(JSON.stringify({ error: "ID is required" }), {
+      status: 400,
+    });
+  }
+
+  await deleteFoodById(id);
+
+  return new NextResponse(JSON.stringify({ message: "Food deleted" }), {
+    status: 200,
+  });
 }
