@@ -24,6 +24,8 @@ export async function POST(request: NextRequest) {
 
   const uploadedUrl = await uploadImageToCloudinary(image);
 
+  console.log("CATEGORY IDDD", categoryId);
+
   const result = await createFood(
     name,
     ingredients,
